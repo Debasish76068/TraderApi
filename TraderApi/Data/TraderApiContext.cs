@@ -22,5 +22,9 @@ namespace TraderApi.Data
         public DbSet<TraderApi.Data.Entities.Order>? Order { get; set; }
        
         public DbSet<TraderApi.Data.Entities.Transporter>? Transporter { get; set; }
+       
+        public DbSet<TraderApi.Data.Entities.GstDetail>? GstDetail { get; set; }
+       
+        public DbSet<TraderApi.Data.Entities.AccountDetail>? AccountDetail { get; set; }
     }
 }

@@ -137,7 +137,6 @@ namespace TraderApi.Controllers
             }
             agent.IsDeleted=true;
             agent.ModifiedDate = DateTime.Now;
-           // _context.Agent.Remove(agent);
             await _context.SaveChangesAsync();
 
             return NoContent();

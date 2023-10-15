@@ -1,6 +1,6 @@
 ﻿namespace TraderApi.Models
 {
-    public class Order
+    public class OrderRequest
     {
         public string AgentName { get; set; }
         public string item { get; set; }

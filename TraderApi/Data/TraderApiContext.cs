@@ -26,5 +26,12 @@ namespace TraderApi.Data
         public DbSet<TraderApi.Data.Entities.GstDetail>? GstDetail { get; set; }
        
         public DbSet<TraderApi.Data.Entities.AccountDetail>? AccountDetail { get; set; }
+       
+        public DbSet<TraderApi.Data.Entities.Dispatch>? Dispatch { get; set; }
+       
+        public DbSet<TraderApi.Data.Entities.Items>? Items { get; set; }
+       
+        public DbSet<TraderApi.Data.Entities.SalesBill>? SalesBill { get; set; }
+       
     }
 }

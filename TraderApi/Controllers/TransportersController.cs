@@ -134,7 +134,8 @@ namespace TraderApi.Controllers
                 return NotFound();
             }
 
-            _context.Transporter.Remove(transporter);
+            transporter.IsDeleted = true;
+            transporter.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
 
             return NoContent();

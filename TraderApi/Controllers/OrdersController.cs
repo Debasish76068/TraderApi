@@ -29,7 +29,7 @@ namespace TraderApi.Controllers
           {
               return NotFound();
           }
-            return await _context.Order.ToListAsync();
+            return await _context.Order.Where(a => a.IsDeleted == false).ToListAsync();
         }
 
         // GET: api/Orders/5
@@ -40,7 +40,7 @@ namespace TraderApi.Controllers
           {
               return NotFound();
           }
-            var order = await _context.Order.FindAsync(id);
+            var order = await _context.Order.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
 
             if (order == null)
             {
@@ -53,17 +53,24 @@ namespace TraderApi.Controllers
         // PUT: api/Orders/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutOrder(int id, Order order)
+        public async Task<IActionResult> PutOrder(int id, Models.OrderRequest order)
         {
-            if (id != order.Id)
+            var orderDb = await _context.Order.FindAsync(id);
+            if (id != orderDb.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(order).State = EntityState.Modified;
+            _context.Entry(orderDb).State = EntityState.Modified;
 
             try
             {
+                orderDb.AgentName= order.AgentName;
+                orderDb.BagQuantity= order.BagQuantity;
+                orderDb.Rate= order.Rate;
+                orderDb.item = order.item;
+                orderDb.ModifiedBy = order.UsedBy;
+                orderDb.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -84,16 +91,37 @@ namespace TraderApi.Controllers
         // POST: api/Orders
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Order>> PostOrder(Order order)
+        public async Task<ActionResult<Order>> PostOrder(Models.OrderRequest order)
         {
           if (_context.Order == null)
           {
               return Problem("Entity set 'TraderApiContext.Order'  is null.");
           }
-            _context.Order.Add(order);
-            await _context.SaveChangesAsync();
+            Order orderDb = new Order();
+            try
+            {
+                orderDb.AgentName = order.AgentName;
+                orderDb.BagQuantity = order.BagQuantity;
+                orderDb.Rate = order.Rate;
+                orderDb.item = order.item;
+                orderDb.CreatedBy = order.UsedBy;
+                orderDb.CreatedDate = DateTime.Now;
+                _context.Order.Add(orderDb);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!OrderExists(orderDb.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
-            return CreatedAtAction("GetOrder", new { id = order.Id }, order);
+            return CreatedAtAction("GetOrder", new { id = orderDb.Id }, orderDb);
         }
 
         // DELETE: api/Orders/5
@@ -109,8 +137,8 @@ namespace TraderApi.Controllers
             {
                 return NotFound();
             }
-
-            _context.Order.Remove(order);
+            order.IsDeleted = true;
+            order.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
 
             return NoContent();

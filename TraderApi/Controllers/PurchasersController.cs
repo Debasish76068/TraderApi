@@ -136,7 +136,8 @@ namespace TraderApi.Controllers
                 return NotFound();
             }
 
-            _context.Purchaser.Remove(purchaser);
+            purchaser.IsDeleted = true;
+            purchaser.ModifiedDate = DateTime.Now;
             await _context.SaveChangesAsync();
 
             return NoContent();

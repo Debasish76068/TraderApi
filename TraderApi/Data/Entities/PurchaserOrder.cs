@@ -2,12 +2,14 @@
 
 namespace TraderApi.Data.Entities
 {
-    public class Order
+    public class PurchaserOrder              
     {
         public int Id { get; set; }
+        [StringLength(10)]
+        public string OrderNo { get; set; }
 
         [StringLength(50)]
-        public string AgentName { get; set; }
+        public string Name { get; set; }
 
         [StringLength(50)]
         public string item { get; set; }

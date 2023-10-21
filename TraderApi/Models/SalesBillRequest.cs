@@ -10,8 +10,11 @@ namespace TraderApi.Models
         public DateTime SalesYear { get; set; }
         public int SalesBillNumber { get; set; }
         public int BilitNumber { get; set; }
+        public int TransporterId { get; set; }
         public string TransporterName { get; set; }
+        public int AgentId { get; set; }
         public string AgentName { get; set; }
+        public int PurchaserId { get; set; }
         public string Purchaser { get; set; }
         public string Status { get; set; }
         public decimal Weight { get; set; }

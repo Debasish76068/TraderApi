@@ -2,7 +2,7 @@
 {
     public class OrderRequest
     {
-        public string AgentName { get; set; }
+        public string Name { get; set; }
         public string item { get; set; }
         public int BagQuantity { get; set; }
         public decimal Rate { get; set; }

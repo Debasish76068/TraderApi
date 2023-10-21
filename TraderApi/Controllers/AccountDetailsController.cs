@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using log4net.Repository.Hierarchy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using TraderApi.Data;
 using TraderApi.Data.Entities;
 
@@ -15,10 +17,11 @@ namespace TraderApi.Controllers
     public class AccountDetailsController : ControllerBase
     {
         private readonly TraderApiContext _context;
-
-        public AccountDetailsController(TraderApiContext context)
+        private readonly ILogger<AccountDetailsController> _logger;
+        public AccountDetailsController(TraderApiContext context, ILogger<AccountDetailsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/AccountDetails
@@ -65,6 +68,7 @@ namespace TraderApi.Controllers
 
             try
             {
+                _logger.LogDebug($"Processing Showing the PutAccountDetail  {accountDetailDb.Name} ");
                 accountDetailDb.Name = accountDetail.Name;
                 accountDetailDb.BankName = accountDetail.BankName;
                 accountDetailDb.AccountNumber = accountDetail.AccountNumber;
@@ -73,8 +77,9 @@ namespace TraderApi.Controllers
                 accountDetailDb.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Exception processing for PutAccountDetail {accountDetailDb.Name}. {ex}.");
                 if (!AccountDetailExists(id))
                 {
                     return NotFound();
@@ -100,6 +105,7 @@ namespace TraderApi.Controllers
             AccountDetail accountDetailDb = new AccountDetail();
             try
             {
+               _logger.LogDebug($"Processing update for PostAccountDetail  {accountDetailDb.Name} ");
                 accountDetailDb.Name = accountDetail.Name;
                 accountDetailDb.BankName = accountDetail.BankName;
                 accountDetailDb.AccountNumber = accountDetail.AccountNumber;
@@ -109,8 +115,9 @@ namespace TraderApi.Controllers
                 _context.AccountDetail.Add(accountDetailDb);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Exception processing for PostAccountDetail {accountDetailDb.Name}. {ex}.");
                 if (!AccountDetailExists(accountDetailDb.Id))
                 {
                     return NotFound();

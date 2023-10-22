@@ -15,10 +15,12 @@ namespace TraderApi.Controllers
     public class AgentsController : ControllerBase
     {
         private readonly TraderApiContext _context;
+        private readonly ILogger<AgentsController> _logger;
 
-        public AgentsController(TraderApiContext context)
+        public AgentsController(TraderApiContext context, ILogger<AgentsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/Agents
@@ -65,6 +67,7 @@ namespace TraderApi.Controllers
 
             try
             {
+                _logger.LogDebug($"Processing Showing the PutAgent {agentDb.Name} ");
                 agentDb.Name = agent.Name;
                 agentDb.Mobile1 = agent.Mobile1;
                 agentDb.Mobile2 = agent.Mobile2;
@@ -73,8 +76,9 @@ namespace TraderApi.Controllers
                 await _context.SaveChangesAsync();
 
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Exception processing for PutAgent {agentDb.Name}. {ex}.");
                 if (!AgentExists(id))
                 {
                     return NotFound();
@@ -100,6 +104,7 @@ namespace TraderApi.Controllers
             Agent agentDb = new Agent();
             try
             {
+                _logger.LogDebug($"Processing update for PostAgent  {agentDb.Name} ");
                 agentDb.Name = agent.Name;
                 agentDb.Mobile1 = agent.Mobile1;
                 agentDb.Mobile2 = agent.Mobile2;
@@ -108,8 +113,9 @@ namespace TraderApi.Controllers
                 _context.Agent.Add(agentDb);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Exception processing for PostAgent {agentDb.Name}. {ex}.");
                 if (!AgentExists(agentDb.Id))
                 {
                     return NotFound();

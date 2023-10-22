@@ -15,10 +15,12 @@ namespace TraderApi.Controllers
     public class DispatchesController : ControllerBase
     {
         private readonly TraderApiContext _context;
+        private readonly ILogger<AgentsController> _logger;
 
-        public DispatchesController(TraderApiContext context)
+        public DispatchesController(TraderApiContext context, ILogger<AgentsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/Dispatches
@@ -64,7 +66,8 @@ namespace TraderApi.Controllers
             _context.Entry(dispatchDb).State = EntityState.Modified;
 
             try
-            {                
+            {
+                _logger.LogDebug($"Processing Showing the PutDispatch {dispatchDb.Item} ");
                 dispatchDb.BagQuantity = dispatch.BagQuantity;
                 dispatchDb.Rate = dispatch.Rate;
                 dispatchDb.Item = dispatch.Item;
@@ -74,8 +77,9 @@ namespace TraderApi.Controllers
                 dispatchDb.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+               _logger.LogCritical($"Exception processing for PutAgent {dispatchDb.Item}. {ex}.");
                 if (!DispatchExists(id))
                 {
                     return NotFound();
@@ -101,7 +105,8 @@ namespace TraderApi.Controllers
 
             Dispatch dispatchDb = new Dispatch();
             try
-            {                
+            {
+                _logger.LogDebug($"Processing update for PostDispatch {dispatchDb.Item} ");
                 dispatchDb.BagQuantity = dispatch.BagQuantity;
                 dispatchDb.Rate = dispatch.Rate;
                 dispatchDb.Item = dispatch.Item;
@@ -112,8 +117,9 @@ namespace TraderApi.Controllers
                 _context.Dispatch.Add(dispatchDb);
                 await _context.SaveChangesAsync();
             }
-            catch(DbUpdateConcurrencyException)
+            catch(DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Exception processing for PostDispatch {dispatchDb.Item}. {ex}.");
                 if (!DispatchExists(dispatchDb.Id))
                 {
                     return NotFound();

@@ -15,39 +15,61 @@ namespace TraderApi.Controllers
     public class GstDetailsController : ControllerBase
     {
         private readonly TraderApiContext _context;
+        private readonly ILogger<AgentsController> _logger;
 
-        public GstDetailsController(TraderApiContext context)
+        public GstDetailsController(TraderApiContext context, ILogger<AgentsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/GstDetails
         [HttpGet]
         public async Task<ActionResult<IEnumerable<GstDetail>>> GetGstDetail()
         {
-          if (_context.GstDetail == null)
-          {
-              return NotFound();
-          }
-            return await _context.GstDetail.Where(a => a.IsDeleted == false).ToListAsync();
+            try
+            {
+                _logger.LogInformation($" Getting Gst Detail Information for GstDetailsControllerr.");
+                if (_context.GstDetail == null)
+                {
+                    return NotFound();
+                }
+                return await _context.GstDetail.Where(a => a.IsDeleted == false).ToListAsync();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Gst Detail Information for GstDetailsController: Exception: {ex}.");
+                return null;
+            }
+
         }
 
         // GET: api/GstDetails/5
         [HttpGet("{id}")]
         public async Task<ActionResult<GstDetail>> GetGstDetail(int id)
         {
-          if (_context.GstDetail == null)
-          {
-              return NotFound();
-          }
-            var gstDetail = await _context.GstDetail.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
-
-            if (gstDetail == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Gst Detail Information for GstDetailsController: {id}.");
+                if (_context.GstDetail == null)
+                {
+                    return NotFound();
+                }
+                var gstDetail = await _context.GstDetail.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
+
+                if (gstDetail == null)
+                {
+                    return NotFound();
+                }
+
+                return gstDetail;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Gst Detail Information for GstDetailsController: Exception: {id}, Exception: {ex}.");
+                return null;
             }
 
-            return gstDetail;
         }
 
         // PUT: api/GstDetails/5
@@ -66,6 +88,7 @@ namespace TraderApi.Controllers
 
             try
             {
+                _logger.LogInformation($"Processing Showing the PutGstDetail {gstDetailDb.Name} ");
                 gstDetailDb.Name = gstDetail.Name;
                 gstDetailDb.ApmcNumber = gstDetail.ApmcNumber;
                 gstDetailDb.GstNumber = gstDetail.GstNumber;
@@ -73,8 +96,9 @@ namespace TraderApi.Controllers
                 gstDetailDb.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Error: Exception processing for PutGstDetail: {gstDetailDb.Name}, Exception: {ex}.");
                 if (!GstDetailExists(id))
                 {
                     return NotFound();
@@ -99,7 +123,8 @@ namespace TraderApi.Controllers
           }
             GstDetail gstDetailDb=new GstDetail();
             try
-            {   
+            {
+                _logger.LogInformation($"Processing Showing the PostGstDetail {gstDetailDb.Name} ");
                 gstDetailDb.Name = gstDetail.Name;
                 gstDetailDb.ApmcNumber = gstDetail.ApmcNumber;
                 gstDetailDb.GstNumber = gstDetail.GstNumber;
@@ -108,8 +133,9 @@ namespace TraderApi.Controllers
                 _context.GstDetail.Add(gstDetailDb);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Error: Exception processing for PostGstDetail: {gstDetailDb.Name}, Exception: {ex}.");
                 if (!GstDetailExists(gstDetailDb.Id))
                 {
                     return NotFound();
@@ -126,20 +152,29 @@ namespace TraderApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGstDetail(int id)
         {
-            if (_context.GstDetail == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Delete Gst Detail Information for GstDetailsController: {id}.");
+                if (_context.GstDetail == null)
+                {
+                    return NotFound();
+                }
+                var gstDetail = await _context.GstDetail.FindAsync(id);
+                if (gstDetail == null)
+                {
+                    return NotFound();
+                }
+                gstDetail.IsDeleted = true;
+                gstDetail.ModifiedDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
-            var gstDetail = await _context.GstDetail.FindAsync(id);
-            if (gstDetail == null)
+            catch(Exception ex)
             {
-                return NotFound();
+                _logger.LogCritical($"Error: Unable Delete Gst Detail Information for GstDetailsController: {id}, Exception: {ex}.");
+                return null;
             }
-
-            _context.GstDetail.Remove(gstDetail);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
 
         private bool GstDetailExists(int id)

@@ -16,7 +16,6 @@ namespace TraderApi.Controllers
     {
         private readonly TraderApiContext _context;
         private readonly ILogger<AgentsController> _logger;
-
         public DispatchesController(TraderApiContext context, ILogger<AgentsController> logger)
         {
             _context = context;
@@ -27,29 +26,49 @@ namespace TraderApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Dispatch>>> GetDispatch()
         {
-          if (_context.Dispatch == null)
-          {
-              return NotFound();
-          }
-            return await _context.Dispatch.Where(a => a.IsDeleted == false).ToListAsync();
+            try
+            {
+                _logger.LogInformation($" Getting Dispatch Details Information for DispatchesController.");
+                if (_context.Dispatch == null)
+                {
+                    return NotFound();
+                }
+                return await _context.Dispatch.Where(a => a.IsDeleted == false).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Dispatch Details Information for DispatchesController: Exception: {ex}.");
+                return null;
+            }
+
         }
 
         // GET: api/Dispatches/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Dispatch>> GetDispatch(int id)
         {
-          if (_context.Dispatch == null)
-          {
-              return NotFound();
-          }
-            var dispatch = await _context.Dispatch.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
-
-            if (dispatch == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Dispatch Details Information for DispatchesController: {id}.");
+                if (_context.Dispatch == null)
+                {
+                    return NotFound();
+                }
+                var dispatch = await _context.Dispatch.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
+
+                if (dispatch == null)
+                {
+                    return NotFound();
+                }
+
+                return dispatch;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Dispatch Details Information for DispatchesControllerr: Exception: {id}, Exception: {ex}.");
+                return null;
             }
 
-            return dispatch;
         }
 
         // PUT: api/Dispatches/5
@@ -67,7 +86,7 @@ namespace TraderApi.Controllers
 
             try
             {
-                _logger.LogDebug($"Processing Showing the PutDispatch {dispatchDb.Item} ");
+                _logger.LogInformation($"Processing Showing the PutDispatch {dispatchDb.Item}. ");
                 dispatchDb.BagQuantity = dispatch.BagQuantity;
                 dispatchDb.Rate = dispatch.Rate;
                 dispatchDb.Item = dispatch.Item;
@@ -79,7 +98,7 @@ namespace TraderApi.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-               _logger.LogCritical($"Exception processing for PutAgent {dispatchDb.Item}. {ex}.");
+               _logger.LogCritical($"Error: Exception processing for PutAgent {dispatchDb.Item}, Exception: {ex}.");
                 if (!DispatchExists(id))
                 {
                     return NotFound();
@@ -106,7 +125,7 @@ namespace TraderApi.Controllers
             Dispatch dispatchDb = new Dispatch();
             try
             {
-                _logger.LogDebug($"Processing update for PostDispatch {dispatchDb.Item} ");
+                _logger.LogInformation($"Processing update for PostDispatch {dispatchDb.Item}.");
                 dispatchDb.BagQuantity = dispatch.BagQuantity;
                 dispatchDb.Rate = dispatch.Rate;
                 dispatchDb.Item = dispatch.Item;
@@ -119,7 +138,7 @@ namespace TraderApi.Controllers
             }
             catch(DbUpdateConcurrencyException ex)
             {
-                _logger.LogCritical($"Exception processing for PostDispatch {dispatchDb.Item}. {ex}.");
+                _logger.LogCritical($"Error: Exception processing for PostDispatch: {dispatchDb.Item}, Exception: {ex}.");
                 if (!DispatchExists(dispatchDb.Id))
                 {
                     return NotFound();
@@ -138,20 +157,30 @@ namespace TraderApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDispatch(int id)
         {
-            if (_context.Dispatch == null)
+            try
             {
-                return NotFound();
-            }
-            var dispatch = await _context.Dispatch.FindAsync(id);
-            if (dispatch == null)
-            {
-                return NotFound();
-            }
-            dispatch.IsDeleted = true;
-            dispatch.ModifiedDate = DateTime.Now;
-            await _context.SaveChangesAsync();
+                _logger.LogInformation($" Getting Delete Dispatch Details Information for DispatchesController.: {id}.");
+                if (_context.Dispatch == null)
+                {
+                    return NotFound();
+                }
+                var dispatch = await _context.Dispatch.FindAsync(id);
+                if (dispatch == null)
+                {
+                    return NotFound();
+                }
+                dispatch.IsDeleted = true;
+                dispatch.ModifiedDate = DateTime.Now;
+                await _context.SaveChangesAsync();
 
-            return NoContent();
+                return NoContent();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable Delete Dispatch Details Information for DispatchesController: {id}, Exception: {ex}.");
+                return null;
+            }
+
         }
 
         private bool DispatchExists(int id)

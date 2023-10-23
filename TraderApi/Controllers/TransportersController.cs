@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+//using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,39 +16,61 @@ namespace TraderApi.Controllers
     public class TransportersController : ControllerBase
     {
         private readonly TraderApiContext _context;
+        private readonly ILogger<AgentsController> _logger;
 
-        public TransportersController(TraderApiContext context)
+        public TransportersController(TraderApiContext context, ILogger<AgentsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/Transporters
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Transporter>>> GetTransporter()
         {
-          if (_context.Transporter == null)
-          {
-              return NotFound();
-          }
-            return await _context.Transporter.Where(a=>a.IsDeleted == false).ToListAsync();
+            try
+            {
+                _logger.LogInformation($" Getting Transporter Details Information for TransportersController.");
+                if (_context.Transporter == null)
+                {
+                    return NotFound();
+                }
+                return await _context.Transporter.Where(a => a.IsDeleted == false).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Transporter Details Information for TransportersController: Exception: {ex}.");
+                return null;
+            }
+
         }
 
         // GET: api/Transporters/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Transporter>> GetTransporter(int id)
         {
-          if (_context.Transporter == null)
-          {
-              return NotFound();
-          }
-            var transporter = await _context.Transporter.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
-
-            if (transporter == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Transporter Details Information for TransportersController: {id}.");
+                if (_context.Transporter == null)
+                {
+                    return NotFound();
+                }
+                var transporter = await _context.Transporter.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
+
+                if (transporter == null)
+                {
+                    return NotFound();
+                }
+
+                return transporter;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Transporter Details Information for TransportersController: Exception: {id}, Exception: {ex}.");
+                return null;
             }
 
-            return transporter;
         }
 
         // PUT: api/Transporters/5
@@ -65,14 +88,16 @@ namespace TraderApi.Controllers
 
             try
             {
+                _logger.LogInformation($"Processing Showing the PutTransporter {transporterDb.Name}.");
                 transporterDb.Name = transporter.Name;
                 transporterDb.Mobile1 = transporter.Mobile1;
                 transporterDb.ModifiedBy = transporter.UsedBy;
                 transporterDb.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Error: Exception processing for PutTransporter: {transporterDb.Name}, Exception: {ex}.");
                 if (!TransporterExists(id))
                 {
                     return NotFound();
@@ -98,6 +123,7 @@ namespace TraderApi.Controllers
             Transporter transporterDb = new Transporter();
             try
             {
+                _logger.LogInformation($"Processing Showing the PostTransporter {transporterDb.Name}.");
                 transporterDb.Name = transporter.Name;
                 transporterDb.Mobile1 = transporter.Mobile1;
                 transporterDb.CreatedBy = transporter.UsedBy;
@@ -105,8 +131,9 @@ namespace TraderApi.Controllers
                 _context.Transporter.Add(transporterDb);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Error: Exception processing for PostTransporter: {transporterDb.Name}, Exception: {ex}.");
                 if (!TransporterExists(transporterDb.Id))
                 {
                     return NotFound();
@@ -124,21 +151,30 @@ namespace TraderApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTransporter(int id)
         {
-            if (_context.Transporter == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Delete Transporter Details Information for TransportersController: {id}.");
+                if (_context.Transporter == null)
+                {
+                    return NotFound();
+                }
+                var transporter = await _context.Transporter.FindAsync(id);
+                if (transporter == null)
+                {
+                    return NotFound();
+                }
+
+                transporter.IsDeleted = true;
+                transporter.ModifiedDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
-            var transporter = await _context.Transporter.FindAsync(id);
-            if (transporter == null)
+            catch(Exception ex)
             {
-                return NotFound();
+                _logger.LogCritical($"Error: Unable Delete Transporter Details Information for TransportersController: {id}, Exception: {ex}.");
+                return null;
             }
-
-            transporter.IsDeleted = true;
-            transporter.ModifiedDate = DateTime.Now;
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
 
         private bool TransporterExists(int id)

@@ -16,7 +16,6 @@ namespace TraderApi.Controllers
     {
         private readonly TraderApiContext _context;
         private readonly ILogger<AccountDetailsController> _logger;
-
         public ItemsController(TraderApiContext context, ILogger<AccountDetailsController> logger)
         {
             _context = context;
@@ -39,9 +38,8 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Item Details Information for ItemsController: Exception: {ex}.");
-                return null;
+                throw;
             }
-
         }
 
         // GET: api/Items/5
@@ -61,15 +59,13 @@ namespace TraderApi.Controllers
                 {
                     return NotFound();
                 }
-
                 return items;
             }
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Item Details Information for ItemsController: Exception: {id}, Exception: {ex}.");
-                return null;
+                throw;
             }
-
         }
 
         //// PUT: api/Items/5

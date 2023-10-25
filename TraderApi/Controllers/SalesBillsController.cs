@@ -39,9 +39,8 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Sales Bills Detail Information for SalesBillsController: Exception: {ex}.");
-                return null;
+                throw;
             }
-
         }
 
         // GET: api/SalesBills/5
@@ -56,20 +55,17 @@ namespace TraderApi.Controllers
                     return NotFound();
                 }
                 var salesBill = await _context.SalesBill.FindAsync(id);
-
                 if (salesBill == null)
                 {
                     return NotFound();
                 }
-
                 return salesBill;
             }
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Sales Bills Detail Information for SalesBillsController: Exception: {id}, Exception: {ex}.");
-                return null;
+                throw;
             }
-
         }
 
         // GET: api/SalesBills/5
@@ -84,35 +80,34 @@ namespace TraderApi.Controllers
                     return NotFound();
                 }
                 var salesBill = await _context.SalesBill.Where(a => a.PurchaserId == purchaserId).FirstOrDefaultAsync();
-
                 if (salesBill == null)
                 {
                     return NotFound();
                 }
-
                 return salesBill;
             }
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Sales Bills Detail Information for SalesBillsController: Exception: {purchaserId}, Exception: {ex}.");
-                return null;
+                throw;
             }
         }
-
 
         // PUT: api/SalesBills/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSalesBill(int id, Models.UpdateAmountRequest updateAmount)
         {
-            var salesBillDb = await _context.SalesBill.FindAsync(id);
+            if (_context.SalesBill == null)
+            {
+                return NotFound();
+            }
+            var salesBillDb = await _context.SalesBill.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
             if (id != salesBillDb?.Id)
             {
                 return BadRequest();
             }
-
             _context.Entry(salesBillDb).State = EntityState.Modified;
-
             try
             {
                 _logger.LogInformation($"Processing Showing the PutSalesBill {salesBillDb.SalesBillNumber} ");
@@ -133,7 +128,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 

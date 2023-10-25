@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TraderApi.Data;
 using TraderApi.Data.Entities;
@@ -16,7 +11,6 @@ namespace TraderApi.Controllers
     {
         private readonly TraderApiContext _context;
         private readonly ILogger<AgentsController> _logger;
-
         public AgentsController(TraderApiContext context, ILogger<AgentsController> logger)
         {
             _context = context;
@@ -38,8 +32,8 @@ namespace TraderApi.Controllers
             }
             catch (Exception ex)
             {
-               _logger.LogCritical($"Error: Unable to Getting Agent Details Information for AgentsController: Exception: {ex}.");
-                return null;
+                _logger.LogCritical($"Error: Unable to Getting Agent Details Information for AgentsController: Exception: {ex}.");
+                throw;
             }
         }
 
@@ -55,20 +49,17 @@ namespace TraderApi.Controllers
                     return NotFound();
                 }
                 var agent = await _context.Agent.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
-
                 if (agent == null)
                 {
                     return NotFound();
                 }
-
                 return agent;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-               _logger.LogCritical($"Error: Unable to Getting Agent Details Information for AgentsController: Exception: {id}, Exception: {ex}.");
-                return null;
+                _logger.LogCritical($"Error: Unable to Getting Agent Details Information for AgentsController: Exception: {id}, Exception: {ex}.");
+                throw;
             }
-
         }
 
         // PUT: api/Agents/5
@@ -76,14 +67,16 @@ namespace TraderApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAgent(int id, Models.AgentRequest agent)
         {
-            var agentDb = await _context.Agent.FindAsync(id);
-            if (id != agentDb.Id)
+            if (_context.Agent == null)
+            {
+                return NotFound();
+            }
+            var agentDb = await _context.Agent.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
+            if (id != agentDb?.Id)
             {
                 return BadRequest();
             }
-
             _context.Entry(agentDb).State = EntityState.Modified;
-
             try
             {
                 _logger.LogInformation($"Processing Showing the PutAgent {agentDb.Name}.");
@@ -93,7 +86,6 @@ namespace TraderApi.Controllers
                 agentDb.ModifiedBy = agent.UsedBy;
                 agentDb.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
-
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -107,7 +99,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
@@ -117,9 +108,9 @@ namespace TraderApi.Controllers
         public async Task<ActionResult<Agent>> PostAgent(Models.AgentRequest agent)
         {
             if (_context.Agent == null)
-          {
-              return Problem("Entity set 'TraderApiContext.Agent'  is null.");
-          }
+            {
+                return Problem("Entity set 'TraderApiContext.Agent'  is null.");
+            }
             Agent agentDb = new Agent();
             try
             {
@@ -166,16 +157,14 @@ namespace TraderApi.Controllers
                 agent.IsDeleted = true;
                 agent.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
-
                 return NoContent();
             }
-            catch(Exception  ex)
+            catch (Exception ex)
             {
-               _logger.LogCritical($"Error: Unable Delete Agent Details Information for AgentsController: {id}, Exception: {ex}.");
-                return null;
+                _logger.LogCritical($"Error: Unable Delete Agent Details Information for AgentsController: {id}, Exception: {ex}.");
+                throw;
             }
         }
-
         private bool AgentExists(int id)
         {
             return (_context.Agent?.Any(e => e.Id == id)).GetValueOrDefault();

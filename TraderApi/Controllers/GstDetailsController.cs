@@ -39,9 +39,8 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Gst Detail Information for GstDetailsController: Exception: {ex}.");
-                return null;
+                throw;
             }
-
         }
 
         // GET: api/GstDetails/5
@@ -61,15 +60,13 @@ namespace TraderApi.Controllers
                 {
                     return NotFound();
                 }
-
                 return gstDetail;
             }
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Gst Detail Information for GstDetailsController: Exception: {id}, Exception: {ex}.");
-                return null;
+                throw;
             }
-
         }
 
         // PUT: api/GstDetails/5
@@ -77,15 +74,16 @@ namespace TraderApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutGstDetail(int id, Models.GstDetailRequest gstDetail)
         {
-            var gstDetailDb = await _context.GstDetail.FindAsync(id);
-
-            if (id != gstDetailDb.Id)
+            if (_context.GstDetail == null)
+            {
+                return NotFound();
+            }
+            var gstDetailDb = await _context.GstDetail.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
+            if (id != gstDetailDb?.Id)
             {
                 return BadRequest();
             }
-
             _context.Entry(gstDetailDb).State = EntityState.Modified;
-
             try
             {
                 _logger.LogInformation($"Processing Showing the PutGstDetail {gstDetailDb.Name} ");
@@ -108,7 +106,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
@@ -167,16 +164,14 @@ namespace TraderApi.Controllers
                 gstDetail.IsDeleted = true;
                 gstDetail.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
-
                 return NoContent();
             }
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable Delete Gst Detail Information for GstDetailsController: {id}, Exception: {ex}.");
-                return null;
+                throw;
             }
         }
-
         private bool GstDetailExists(int id)
         {
             return (_context.GstDetail?.Any(e => e.Id == id)).GetValueOrDefault();

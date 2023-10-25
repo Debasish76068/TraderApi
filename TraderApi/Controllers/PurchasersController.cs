@@ -39,9 +39,8 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Purchaser Detail Information for PurchaserController: Exception: {ex}.");
-                return null;
+                throw;
             }
-
         }
 
         // GET: api/Purchasers/5
@@ -61,13 +60,12 @@ namespace TraderApi.Controllers
                 {
                     return NotFound();
                 }
-
                 return purchaser;
             }
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Purchaser Detail Information for PurchaserController: Exception: {id}, Exception: {ex}.");
-                return null;
+                throw;
             }
         }
 
@@ -76,14 +74,16 @@ namespace TraderApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPurchaser(int id, Models.PurchaserRequest purchaser)
         {
-            var purchaserDb = await _context.Purchaser.FindAsync(id);
-            if (id != purchaserDb.Id)
+            if (_context.Purchaser == null)
+            {
+                return NotFound();
+            }
+            var purchaserDb = await _context.Purchaser.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
+            if (id != purchaserDb?.Id)
             {
                 return BadRequest();
             }
-
             _context.Entry(purchaserDb).State = EntityState.Modified;
-
             try
             {
                 _logger.LogInformation($"Processing Showing the PutDispatch {purchaserDb.Name}. ");
@@ -106,7 +106,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
@@ -143,7 +142,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return CreatedAtAction("GetPurchaser", new { id = purchaserDb.Id }, purchaserDb);
         }
 
@@ -163,20 +161,17 @@ namespace TraderApi.Controllers
                 {
                     return NotFound();
                 }
-
                 purchaser.IsDeleted = true;
                 purchaser.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
-
                 return NoContent();
             }
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable Delete Purchaser Details Information for PurchaserController: {id}, Exception: {ex}.");
-                return null;
+                throw;
             }
         }
-
         private bool PurchaserExists(int id)
         {
             return (_context.Purchaser?.Any(e => e.Id == id)).GetValueOrDefault();

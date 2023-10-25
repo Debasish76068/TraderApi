@@ -17,7 +17,6 @@ namespace TraderApi.Controllers
     {
         private readonly TraderApiContext _context;
         private readonly ILogger<AgentsController> _logger;
-
         public TransportersController(TraderApiContext context, ILogger<AgentsController> logger)
         {
             _context = context;
@@ -40,9 +39,8 @@ namespace TraderApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Transporter Details Information for TransportersController: Exception: {ex}.");
-                return null;
+                throw;
             }
-
         }
 
         // GET: api/Transporters/5
@@ -62,15 +60,13 @@ namespace TraderApi.Controllers
                 {
                     return NotFound();
                 }
-
                 return transporter;
             }
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Transporter Details Information for TransportersController: Exception: {id}, Exception: {ex}.");
-                return null;
+                throw;
             }
-
         }
 
         // PUT: api/Transporters/5
@@ -78,14 +74,16 @@ namespace TraderApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTransporter(int id, Models.TransporterRequest transporter)
         {
-            var transporterDb = await _context.Transporter.FindAsync(id);
-            if (id != transporterDb.Id)
+            if (_context.Transporter == null)
+            {
+                return NotFound();
+            }
+            var transporterDb = await _context.Transporter.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id); 
+            if (id != transporterDb?.Id)
             {
                 return BadRequest();
             }
-
             _context.Entry(transporterDb).State = EntityState.Modified;
-
             try
             {
                 _logger.LogInformation($"Processing Showing the PutTransporter {transporterDb.Name}.");
@@ -107,7 +105,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
@@ -143,7 +140,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return CreatedAtAction("GetTransporter", new { id = transporterDb.Id }, transporterDb);
         }
 
@@ -163,20 +159,17 @@ namespace TraderApi.Controllers
                 {
                     return NotFound();
                 }
-
                 transporter.IsDeleted = true;
                 transporter.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
-
                 return NoContent();
             }
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable Delete Transporter Details Information for TransportersController: {id}, Exception: {ex}.");
-                return null;
+                throw;
             }
         }
-
         private bool TransporterExists(int id)
         {
             return (_context.Transporter?.Any(e => e.Id == id)).GetValueOrDefault();

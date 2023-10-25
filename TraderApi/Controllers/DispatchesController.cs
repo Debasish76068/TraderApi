@@ -38,9 +38,8 @@ namespace TraderApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Dispatch Details Information for DispatchesController: Exception: {ex}.");
-                return null;
+                throw;
             }
-
         }
 
         // GET: api/Dispatches/5
@@ -55,20 +54,17 @@ namespace TraderApi.Controllers
                     return NotFound();
                 }
                 var dispatch = await _context.Dispatch.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
-
                 if (dispatch == null)
                 {
                     return NotFound();
                 }
-
                 return dispatch;
             }
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Dispatch Details Information for DispatchesControllerr: Exception: {id}, Exception: {ex}.");
-                return null;
+                throw;
             }
-
         }
 
         // PUT: api/Dispatches/5
@@ -76,14 +72,16 @@ namespace TraderApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutDispatch(int id, Models.DispatchRequest dispatch)
         {
-            var dispatchDb = await _context.Dispatch.FindAsync(id);
+            if (_context.Dispatch == null)
+            {
+                return NotFound();
+            }
+            var dispatchDb = await _context.Dispatch.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
             if (id != dispatchDb?.Id)
             {
                 return BadRequest();
             }
-
             _context.Entry(dispatchDb).State = EntityState.Modified;
-
             try
             {
                 _logger.LogInformation($"Processing Showing the PutDispatch {dispatchDb.Item}. ");
@@ -108,7 +106,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
@@ -121,7 +118,6 @@ namespace TraderApi.Controllers
           {
               return Problem("Entity set 'TraderApiContext.Dispatch'  is null.");
           }
-
             Dispatch dispatchDb = new Dispatch();
             try
             {
@@ -148,8 +144,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
-
             return CreatedAtAction("GetDispatch", new { id = dispatchDb.Id }, dispatchDb);
         }
 
@@ -172,17 +166,14 @@ namespace TraderApi.Controllers
                 dispatch.IsDeleted = true;
                 dispatch.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
-
                 return NoContent();
             }
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable Delete Dispatch Details Information for DispatchesController: {id}, Exception: {ex}.");
-                return null;
+                throw;
             }
-
         }
-
         private bool DispatchExists(int id)
         {
             return (_context.Dispatch?.Any(e => e.Id == id)).GetValueOrDefault();

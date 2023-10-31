@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TraderApi.Data;
 using TraderApi.Data.Entities;
@@ -15,39 +10,56 @@ namespace TraderApi.Controllers
     public class PurchaserOrdersController : ControllerBase
     {
         private readonly TraderApiContext _context;
-
-        public PurchaserOrdersController(TraderApiContext context)
+        private readonly ILogger<AgentsController> _logger;
+        public PurchaserOrdersController(TraderApiContext context, ILogger<AgentsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/PurchaserOrders
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PurchaserOrder>>> GetPurchaserOrder()
         {
-          if (_context.PurchaserOrder == null)
-          {
-              return NotFound();
-          }
-            return await _context.PurchaserOrder.Where(a => a.IsDeleted == false).ToListAsync();
+            try
+            {
+                _logger.LogInformation($" Getting Purchaser Order Detail Information for PurchaserOrdersController.");
+                if (_context.PurchaserOrder == null)
+                {
+                    return NotFound();
+                }
+                return await _context.PurchaserOrder.Where(a => a.IsDeleted == false).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Purchaser Order Detail Information for PurchaserOrdersController: Exception: {ex}.");
+                throw;
+            }
         }
 
         // GET: api/PurchaserOrders/5
         [HttpGet("{id}")]
         public async Task<ActionResult<PurchaserOrder>> GetPurchaserOrder(int id)
         {
-          if (_context.PurchaserOrder == null)
-          {
-              return NotFound();
-          }
-            var PurchaserOrder = await _context.PurchaserOrder.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
-
-            if (PurchaserOrder == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Purchaser Order Detail Information for PurchaserOrdersController: {id}.");
+                if (_context.PurchaserOrder == null)
+                {
+                    return NotFound();
+                }
+                var PurchaserOrder = await _context.PurchaserOrder.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
+                if (PurchaserOrder == null)
+                {
+                    return NotFound();
+                }
+                return PurchaserOrder;
             }
-
-            return PurchaserOrder;
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Purchaser Order Detail Information for PurchaserOrdersController: Exception: {id}, Exception: {ex}.");
+                throw;
+            }
         }
 
         // PUT: api/PurchaserOrders/5
@@ -55,26 +67,30 @@ namespace TraderApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPurchaserOrder(int id, Models.OrderRequest PurchaserOrder)
         {
-            var PurchaserOrderDb = await _context.PurchaserOrder.FindAsync(id);
+            if (_context.PurchaserOrder == null)
+            {
+                return NotFound();
+            }
+            var PurchaserOrderDb = await _context.PurchaserOrder.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
             if (id != PurchaserOrderDb?.Id)
             {
                 return BadRequest();
             }
-
             _context.Entry(PurchaserOrderDb).State = EntityState.Modified;
-
             try
             {
-                PurchaserOrderDb.Name= PurchaserOrder.Name;
-                PurchaserOrderDb.BagQuantity= PurchaserOrder.BagQuantity;
-                PurchaserOrderDb.Rate= PurchaserOrder.Rate;
+                _logger.LogInformation($"Processing Showing the PutPurchaserOrder {PurchaserOrderDb.Name}.");
+                PurchaserOrderDb.Name = PurchaserOrder.Name;
+                PurchaserOrderDb.BagQuantity = PurchaserOrder.BagQuantity;
+                PurchaserOrderDb.Rate = PurchaserOrder.Rate;
                 PurchaserOrderDb.item = PurchaserOrder.item;
                 PurchaserOrderDb.ModifiedBy = PurchaserOrder.UsedBy;
                 PurchaserOrderDb.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Error: Exception processing for PutAccountDetail: {PurchaserOrderDb.Name}, Exception: {ex}.");
                 if (!PurchaserOrderExists(id))
                 {
                     return NotFound();
@@ -84,7 +100,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
@@ -93,13 +108,14 @@ namespace TraderApi.Controllers
         [HttpPost]
         public async Task<ActionResult<PurchaserOrder>> PostPurchaserOrder(Models.OrderRequest PurchaserOrder)
         {
-          if (_context.PurchaserOrder == null)
-          {
-              return Problem("Entity set 'TraderApiContext.PurchaserOrder'  is null.");
-          }
+            if (_context.PurchaserOrder == null)
+            {
+                return Problem("Entity set 'TraderApiContext.PurchaserOrder'  is null.");
+            }
             PurchaserOrder PurchaserOrderDb = new PurchaserOrder();
             try
             {
+                _logger.LogInformation($"Processing Showing the PostPurchaserOrder {PurchaserOrderDb.Name}.");
                 PurchaserOrderDb.OrderNo = GeneratePurchaserOrderNumber("P");
                 PurchaserOrderDb.Name = PurchaserOrder.Name;
                 PurchaserOrderDb.BagQuantity = PurchaserOrder.BagQuantity;
@@ -110,8 +126,9 @@ namespace TraderApi.Controllers
                 _context.PurchaserOrder.Add(PurchaserOrderDb);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Error: Exception processing for PostPurchaserOrder: {PurchaserOrderDb.Name}, Exception: {ex}.");
                 if (!PurchaserOrderExists(PurchaserOrderDb.Id))
                 {
                     return NotFound();
@@ -121,7 +138,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return CreatedAtAction("GetPurchaserOrder", new { id = PurchaserOrderDb.Id }, PurchaserOrderDb);
         }
 
@@ -129,20 +145,28 @@ namespace TraderApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePurchaserOrder(int id)
         {
-            if (_context.PurchaserOrder == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Delete Purchaser Order Detail Information for PurchaserOrdersController: {id}.");
+                if (_context.PurchaserOrder == null)
+                {
+                    return NotFound();
+                }
+                var PurchaserOrder = await _context.PurchaserOrder.FindAsync(id);
+                if (PurchaserOrder == null)
+                {
+                    return NotFound();
+                }
+                PurchaserOrder.IsDeleted = true;
+                PurchaserOrder.ModifiedDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+                return NoContent();
             }
-            var PurchaserOrder = await _context.PurchaserOrder.FindAsync(id);
-            if (PurchaserOrder == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                _logger.LogCritical($"Error: Unable Delete Purchaser Order Details Information for PurchaserOrdersController: {id}, Exception: {ex}.");
+                throw;
             }
-            PurchaserOrder.IsDeleted = true;
-            PurchaserOrder.ModifiedDate = DateTime.Now;
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
 
         private bool PurchaserOrderExists(int id)
@@ -151,15 +175,8 @@ namespace TraderApi.Controllers
         }
         private string GeneratePurchaserOrderNumber(string type)
         {
-            string PurchaserOrderNumber = string.Empty;
-            int PurchaserOrderDefaultvalue = 00001;
-            int? totalCount= _context.PurchaserOrder?.Count();
-            PurchaserOrderNumber = DateTime.Now.Year.ToString("yy") + type + PurchaserOrderDefaultvalue;
-            if (totalCount.HasValue)
-            {
-                PurchaserOrderNumber = DateTime.Now.Year.ToString("yy") + type +(PurchaserOrderDefaultvalue+ totalCount);
-            }
-            return PurchaserOrderNumber ;
+            int? totalCount = _context.PurchaserOrder?.Count();
+            return $"{DateTime.Now.ToString("yy")}{type}{1 + totalCount.Value:D5}";
         }
     }
 }

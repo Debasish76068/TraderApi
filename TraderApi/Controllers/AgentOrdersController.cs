@@ -10,39 +10,56 @@ namespace TraderApi.Controllers
     public class AgentOrdersController : ControllerBase
     {
         private readonly TraderApiContext _context;
-
-        public AgentOrdersController(TraderApiContext context)
+        private readonly ILogger<AgentsController> _logger;
+        public AgentOrdersController(TraderApiContext context, ILogger<AgentsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/AgentOrders
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AgentOrder>>> GetAgentOrder()
         {
-            if (_context.AgentOrder == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Agent Details Information for AgentOrdersController.");
+                if (_context.AgentOrder == null)
+                {
+                    return NotFound();
+                }
+                return await _context.AgentOrder.Where(a => a.IsDeleted == false).ToListAsync();
             }
-            return await _context.AgentOrder.Where(a => a.IsDeleted == false).ToListAsync();
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Agent Details Information for AgentOrdersController: Exception: {ex}.");
+                throw;
+            }
         }
 
         // GET: api/AgentOrders/5
         [HttpGet("{id}")]
         public async Task<ActionResult<AgentOrder>> GetAgentOrder(int id)
         {
-            if (_context.AgentOrder == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Agent Order Details Information for AgentOrdersController: {id}.");
+                if (_context.AgentOrder == null)
+                {
+                    return NotFound();
+                }
+                var AgentOrder = await _context.AgentOrder.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
+                if (AgentOrder == null)
+                {
+                    return NotFound();
+                }
+                return AgentOrder;
             }
-            var AgentOrder = await _context.AgentOrder.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
-
-            if (AgentOrder == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                _logger.LogCritical($"Error: Unable to Getting Agent Order Details Information for AgentOrdersController: Exception: {id}, Exception: {ex}.");
+                throw;
             }
-
-            return AgentOrder;
         }
 
         // PUT: api/AgentOrders/5
@@ -50,16 +67,19 @@ namespace TraderApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAgentOrder(int id, Models.OrderRequest AgentOrder)
         {
-            var AgentOrderDb = await _context.AgentOrder.FindAsync(id);
+            if (_context.AgentOrder == null)
+            {
+                return NotFound();
+            }
+            var AgentOrderDb = await _context.AgentOrder.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
             if (id != AgentOrderDb?.Id)
             {
                 return BadRequest();
             }
-
             _context.Entry(AgentOrderDb).State = EntityState.Modified;
-
             try
             {
+                _logger.LogInformation($"Processing Showing the PutAgentOrder {AgentOrderDb.Name}.");
                 AgentOrderDb.Name = AgentOrder.Name;
                 AgentOrderDb.BagQuantity = AgentOrder.BagQuantity;
                 AgentOrderDb.Rate = AgentOrder.Rate;
@@ -68,8 +88,9 @@ namespace TraderApi.Controllers
                 AgentOrderDb.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Error: Exception processing for PutAccountDetail:{AgentOrderDb.Name}, Exception: {ex}.");
                 if (!AgentOrderExists(id))
                 {
                     return NotFound();
@@ -79,7 +100,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
@@ -95,6 +115,7 @@ namespace TraderApi.Controllers
             AgentOrder AgentOrderDb = new AgentOrder();
             try
             {
+                _logger.LogInformation($"Processing Showing the PostAgentOrder {AgentOrderDb.Name}.");
                 AgentOrderDb.OrderNo = GenerateAgentOrderNumber("A");
                 AgentOrderDb.Name = AgentOrder.Name;
                 AgentOrderDb.BagQuantity = AgentOrder.BagQuantity;
@@ -105,8 +126,9 @@ namespace TraderApi.Controllers
                 _context.AgentOrder.Add(AgentOrderDb);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Error: Exception processing for PostAgentOrder: {AgentOrderDb.Name}, Exception: {ex}.");
                 if (!AgentOrderExists(AgentOrderDb.Id))
                 {
                     return NotFound();
@@ -116,7 +138,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return CreatedAtAction("GetAgentOrder", new { id = AgentOrderDb.Id }, AgentOrderDb);
         }
 
@@ -124,37 +145,37 @@ namespace TraderApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAgentOrder(int id)
         {
-            if (_context.AgentOrder == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Delete Agent Order Detail Information for AgentOrdersController: {id}.");
+                if (_context.AgentOrder == null)
+                {
+                    return NotFound();
+                }
+                var AgentOrder = await _context.AgentOrder.FindAsync(id);
+                if (AgentOrder == null)
+                {
+                    return NotFound();
+                }
+                AgentOrder.IsDeleted = true;
+                AgentOrder.ModifiedDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+                return NoContent();
             }
-            var AgentOrder = await _context.AgentOrder.FindAsync(id);
-            if (AgentOrder == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                _logger.LogCritical($"Error: Unable Delete Agent Order Details Information for AgentOrdersController: {id}, Exception: {ex}.");
+                throw;
             }
-            AgentOrder.IsDeleted = true;
-            AgentOrder.ModifiedDate = DateTime.Now;
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
-
         private bool AgentOrderExists(int id)
         {
             return (_context.AgentOrder?.Any(e => e.Id == id)).GetValueOrDefault();
         }
         private string GenerateAgentOrderNumber(string type)
         {
-            string AgentOrderNumber = string.Empty;
-            int AgentOrderDefaultvalue = 00001;
             int? totalCount = _context.AgentOrder?.Count();
-            AgentOrderNumber = DateTime.Now.Year.ToString("yy") + type + AgentOrderDefaultvalue;
-            if (totalCount.HasValue)
-            {
-                AgentOrderNumber = DateTime.Now.Year.ToString("yy") + type + (AgentOrderDefaultvalue + totalCount);
-            }
-            return AgentOrderNumber;
+            return $"{DateTime.Now.ToString("yy")}{type}{1 + totalCount.Value:D5}";
         }
     }
 }

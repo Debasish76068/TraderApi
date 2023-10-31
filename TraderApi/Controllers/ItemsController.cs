@@ -15,39 +15,57 @@ namespace TraderApi.Controllers
     public class ItemsController : ControllerBase
     {
         private readonly TraderApiContext _context;
-
-        public ItemsController(TraderApiContext context)
+        private readonly ILogger<AccountDetailsController> _logger;
+        public ItemsController(TraderApiContext context, ILogger<AccountDetailsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/Items
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Items>>> GetItems()
         {
-          if (_context.Items == null)
-          {
-              return NotFound();
-          }
-            return await _context.Items.ToListAsync();
+            try
+            {
+                _logger.LogInformation($" Getting Item Details Information for ItemsController.");
+                if (_context.Items == null)
+                {
+                    return NotFound();
+                }
+                return await _context.Items.ToListAsync();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Item Details Information for ItemsController: Exception: {ex}.");
+                throw;
+            }
         }
 
         // GET: api/Items/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Items>> GetItems(int id)
         {
-          if (_context.Items == null)
-          {
-              return NotFound();
-          }
-            var items = await _context.Items.FindAsync(id);
-
-            if (items == null)
+            try
             {
-                return NotFound();
-            }
+                _logger.LogInformation($" Getting Item Details Information for ItemsController: {id}.");
+                if (_context.Items == null)
+                {
+                    return NotFound();
+                }
+                var items = await _context.Items.FindAsync(id);
 
-            return items;
+                if (items == null)
+                {
+                    return NotFound();
+                }
+                return items;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Item Details Information for ItemsController: Exception: {id}, Exception: {ex}.");
+                throw;
+            }
         }
 
         //// PUT: api/Items/5

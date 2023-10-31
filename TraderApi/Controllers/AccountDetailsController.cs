@@ -28,29 +28,45 @@ namespace TraderApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AccountDetail>>> GetAccountDetail()
         {
-          if (_context.AccountDetail == null)
-          {
-              return NotFound();
-          }
-            return await _context.AccountDetail.Where(a => a.IsDeleted == false).ToListAsync(); 
+            try
+            {
+                _logger.LogInformation($" Getting Account Details Information for AccountDetailsController ");
+                if (_context.AccountDetail == null)
+                {
+                    return NotFound();
+                }
+                return await _context.AccountDetail.Where(a => a.IsDeleted == false).ToListAsync();
+            }
+            catch(Exception ex)
+            {
+               _logger.LogCritical($"Error: Unable to Getting Account Details Information for AccountDetailsController: Exception: {ex}.");
+                throw;
+            }
         }
 
         // GET: api/AccountDetails/5
         [HttpGet("{id}")]
         public async Task<ActionResult<AccountDetail>> GetAccountDetail(int id)
         {
-          if (_context.AccountDetail == null)
-          {
-              return NotFound();
-          }
-            var accountDetail = await _context.AccountDetail.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
-
-            if (accountDetail == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Account Details Information for AccountDetailsController: {id} ");
+                if (_context.AccountDetail == null)
+                {
+                    return NotFound();
+                }
+                var accountDetail = await _context.AccountDetail.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
+                if (accountDetail == null)
+                {
+                    return NotFound();
+                }
+                return accountDetail;
             }
-
-            return accountDetail;
+            catch(Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Account Details Information for AccountDetailsController: {id}, Exception: {ex}.");
+                throw;
+            }
         }
 
         // PUT: api/AccountDetails/5
@@ -58,17 +74,19 @@ namespace TraderApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAccountDetail(int id, Models.AccountDetailRequest accountDetail)
         {
-            var accountDetailDb = await _context.AccountDetail.FindAsync(id);
-            if (id != accountDetailDb.Id)
+            if (_context.AccountDetail == null)
+            {
+                return NotFound();
+            }
+            var accountDetailDb = await _context.AccountDetail.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id); 
+            if (id != accountDetailDb?.Id)
             {
                 return BadRequest();
             }
-
             _context.Entry(accountDetailDb).State = EntityState.Modified;
-
             try
             {
-                _logger.LogDebug($"Processing Showing the PutAccountDetail  {accountDetailDb.Name} ");
+                _logger.LogInformation($"Processing Showing the PutAccountDetail  {accountDetailDb.Name}.");
                 accountDetailDb.Name = accountDetail.Name;
                 accountDetailDb.BankName = accountDetail.BankName;
                 accountDetailDb.AccountNumber = accountDetail.AccountNumber;
@@ -79,7 +97,7 @@ namespace TraderApi.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                _logger.LogCritical($"Exception processing for PutAccountDetail {accountDetailDb.Name}. {ex}.");
+                _logger.LogCritical($"Error: Exception processing for PutAccountDetail: {accountDetailDb.Name}, Exception: {ex}");
                 if (!AccountDetailExists(id))
                 {
                     return NotFound();
@@ -89,7 +107,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
@@ -105,7 +122,7 @@ namespace TraderApi.Controllers
             AccountDetail accountDetailDb = new AccountDetail();
             try
             {
-               _logger.LogDebug($"Processing update for PostAccountDetail  {accountDetailDb.Name} ");
+               _logger.LogInformation($"Processing update for PostAccountDetail  {accountDetailDb.Name}.");
                 accountDetailDb.Name = accountDetail.Name;
                 accountDetailDb.BankName = accountDetail.BankName;
                 accountDetailDb.AccountNumber = accountDetail.AccountNumber;
@@ -117,7 +134,7 @@ namespace TraderApi.Controllers
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                _logger.LogCritical($"Exception processing for PostAccountDetail {accountDetailDb.Name}. {ex}.");
+                _logger.LogCritical($"Error: Exception processing for PostAccountDetail: {accountDetailDb.Name}, Exception: {ex}.");
                 if (!AccountDetailExists(accountDetailDb.Id))
                 {
                     return NotFound();
@@ -134,22 +151,29 @@ namespace TraderApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAccountDetail(int id)
         {
-            if (_context.AccountDetail == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Delete Account Details Information for AccountDetailsController: {id}.");
+                if (_context.AccountDetail == null)
+                {
+                    return NotFound();
+                }
+                var accountDetail = await _context.AccountDetail.FindAsync(id);
+                if (accountDetail == null)
+                {
+                    return NotFound();
+                }
+                accountDetail.IsDeleted = true;
+                accountDetail.ModifiedDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+                return NoContent();
             }
-            var accountDetail = await _context.AccountDetail.FindAsync(id);
-            if (accountDetail == null)
+            catch(Exception ex)
             {
-                return NotFound();
+               _logger.LogCritical($"Error: Unable Delete Account Details Information for AccountDetailsController: {id}, Exception: {ex}.");
+                throw;
             }
-
-            _context.AccountDetail.Remove(accountDetail);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
-
         private bool AccountDetailExists(int id)
         {
             return (_context.AccountDetail?.Any(e => e.Id == id)).GetValueOrDefault();

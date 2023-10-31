@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+//using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,82 +16,109 @@ namespace TraderApi.Controllers
     public class SalesBillsController : ControllerBase
     {
         private readonly TraderApiContext _context;
-
-        public SalesBillsController(TraderApiContext context)
+        private readonly ILogger<AgentsController> _logger;
+        public SalesBillsController(TraderApiContext context, ILogger<AgentsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/SalesBills
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SalesBill>>> GetSalesBill()
         {
-          if (_context.SalesBill == null)
-          {
-              return NotFound();
-          }
-            return await _context.SalesBill.ToListAsync();
+            try
+            {
+                _logger.LogInformation($" Getting Sales Bills Detail Information for SalesBillsController.");
+                if (_context.SalesBill == null)
+                {
+                    return NotFound();
+                }
+                return await _context.SalesBill.ToListAsync();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Sales Bills Detail Information for SalesBillsController: Exception: {ex}.");
+                throw;
+            }
         }
 
         // GET: api/SalesBills/5
         [HttpGet("{id}")]
         public async Task<ActionResult<SalesBill>> GetSalesBill(int id)
         {
-          if (_context.SalesBill == null)
-          {
-              return NotFound();
-          }
-            var salesBill = await _context.SalesBill.FindAsync(id);
-
-            if (salesBill == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Sales Bills Detail Information for SalesBillsController: {id}.");
+                if (_context.SalesBill == null)
+                {
+                    return NotFound();
+                }
+                var salesBill = await _context.SalesBill.FindAsync(id);
+                if (salesBill == null)
+                {
+                    return NotFound();
+                }
+                return salesBill;
             }
-
-            return salesBill;
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Error: Unable to Getting Sales Bills Detail Information for SalesBillsController: Exception: {id}, Exception: {ex}.");
+                throw;
+            }
         }
 
         // GET: api/SalesBills/5
         [HttpGet("{purchaserId}")]
         public async Task<ActionResult<SalesBill>> GePurchaserSalesBill(int purchaserId)
         {
-            if (_context.SalesBill == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation($" Getting Sales Bills Detail Information for SalesBillsController: {purchaserId}.");
+                if (_context.SalesBill == null)
+                {
+                    return NotFound();
+                }
+                var salesBill = await _context.SalesBill.Where(a => a.PurchaserId == purchaserId).FirstOrDefaultAsync();
+                if (salesBill == null)
+                {
+                    return NotFound();
+                }
+                return salesBill;
             }
-            var salesBill = await _context.SalesBill.Where(a => a.PurchaserId == purchaserId).FirstOrDefaultAsync();
-
-            if (salesBill == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                _logger.LogCritical($"Error: Unable to Getting Sales Bills Detail Information for SalesBillsController: Exception: {purchaserId}, Exception: {ex}.");
+                throw;
             }
-
-            return salesBill;
         }
-
 
         // PUT: api/SalesBills/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSalesBill(int id, Models.UpdateAmountRequest updateAmount)
         {
-            var salesBillDb = await _context.SalesBill.FindAsync(id);
+            if (_context.SalesBill == null)
+            {
+                return NotFound();
+            }
+            var salesBillDb = await _context.SalesBill.Where(a => a.IsDeleted == false).FirstOrDefaultAsync(a => a.Id == id);
             if (id != salesBillDb?.Id)
             {
                 return BadRequest();
             }
-
             _context.Entry(salesBillDb).State = EntityState.Modified;
-
             try
             {
+                _logger.LogInformation($"Processing Showing the PutSalesBill {salesBillDb.SalesBillNumber} ");
                 salesBillDb.Amount = updateAmount.Amount;
                 salesBillDb.ModifiedBy = updateAmount.UsedBy;
                 salesBillDb.ModifiedDate = DateTime.Now;
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Error: Exception processing for PutSalesBill: {salesBillDb.SalesBillNumber}, Exception: {ex}.");
                 if (!SalesBillExists(id))
                 {
                     return NotFound();
@@ -100,7 +128,6 @@ namespace TraderApi.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
@@ -116,6 +143,7 @@ namespace TraderApi.Controllers
             SalesBill salesBillDb = new SalesBill();
             try
             {
+                _logger.LogInformation($"Processing Showing the PostSalesBill {salesBillDb.SalesBillNumber} ");
                 salesBillDb.IsAgentOrder = salesBill.IsAgentOrder;
                 salesBillDb.BookingDate = salesBill.BookingDate;
                 salesBillDb.SalesYear = salesBill.SalesYear;
@@ -152,8 +180,9 @@ namespace TraderApi.Controllers
                 _context.SalesBill.Add(salesBillDb);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogCritical($"Error: Exception processing for PostSalesBill: {salesBillDb.SalesBillNumber}, Exception: {ex}.");
                 if (!SalesBillExists(salesBillDb.Id))
                 {
                     return NotFound();

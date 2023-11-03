@@ -5,3 +5,6 @@
 /.vs
 /TraderApi/bin/Debug/net6.0
 /TraderApi/obj
+/TraderApi/bin/Release/net6.0
+/TraderApi/Properties/PublishProfiles
+/TraderApi/TraderApi.csproj.user

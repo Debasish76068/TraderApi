@@ -15,8 +15,8 @@ namespace TraderApi.Controllers
     public class DispatchesController : ControllerBase
     {
         private readonly TraderApiContext _context;
-        private readonly ILogger<AgentsController> _logger;
-        public DispatchesController(TraderApiContext context, ILogger<AgentsController> logger)
+        private readonly ILogger<DispatchesController> _logger;
+        public DispatchesController(TraderApiContext context, ILogger<DispatchesController> logger)
         {
             _context = context;
             _logger = logger;
@@ -38,7 +38,7 @@ namespace TraderApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Dispatch Details Information for DispatchesController: Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Dispatch Details Information: Exception:{ex.Message}.");
             }
         }
 
@@ -63,7 +63,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Dispatch Details Information for DispatchesControllerr: Exception: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Dispatch Details Information: Exception:{ex.Message}.");
             }
         }
 
@@ -103,7 +103,7 @@ namespace TraderApi.Controllers
                 }
                 else
                 {
-                    throw;
+                    return StatusCode(500, $"An error occurred while updating Dispatch Details Information: Exception:{ex.Message}.");
                 }
             }
             return NoContent();
@@ -135,14 +135,7 @@ namespace TraderApi.Controllers
             catch(DbUpdateConcurrencyException ex)
             {
                 _logger.LogCritical($"Error: Exception processing for PostDispatch: {dispatchDb.Item}, Exception: {ex}.");
-                if (!DispatchExists(dispatchDb.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(500, $"An error occurred while inserting Dispatch Details Information: Exception:{ex.Message}.");
             }
             return CreatedAtAction("GetDispatch", new { id = dispatchDb.Id }, dispatchDb);
         }
@@ -171,7 +164,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable Delete Dispatch Details Information for DispatchesController: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while deleting Dispatch Details Information: Exception:{ex.Message}.");
             }
         }
         private bool DispatchExists(int id)

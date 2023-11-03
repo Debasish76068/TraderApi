@@ -27,16 +27,13 @@ builder.Logging.AddLog4Net();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseWhen(context => context.Request.Path.StartsWithSegments("/api"), applicationBuilder =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-app.UseMiddleware<ApiKeyMiddleware>();
+    applicationBuilder.UseMiddleware<ApiKeyMiddleware>();
+});
+// Configure the HTTP request pipeline.
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseAuthorization();
-
 app.MapControllers();
-
-//app.MapPurchaserEndpoints();
-
 app.Run();

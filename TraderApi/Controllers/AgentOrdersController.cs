@@ -10,8 +10,8 @@ namespace TraderApi.Controllers
     public class AgentOrdersController : ControllerBase
     {
         private readonly TraderApiContext _context;
-        private readonly ILogger<AgentsController> _logger;
-        public AgentOrdersController(TraderApiContext context, ILogger<AgentsController> logger)
+        private readonly ILogger<AgentOrdersController> _logger;
+        public AgentOrdersController(TraderApiContext context, ILogger<AgentOrdersController> logger)
         {
             _context = context;
             _logger = logger;
@@ -32,8 +32,8 @@ namespace TraderApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogCritical($"Error: Unable to Getting Agent Details Information for AgentOrdersController: Exception: {ex}.");
-                throw;
+                _logger.LogCritical($"Error: Unable to Getting Agent Order Details Information for AgentOrdersController: Exception: {ex}.");
+                return StatusCode(500, $"An error occurred while retrieving Agent Order Detail Information: Exception:{ex.Message}.");
             }
         }
 
@@ -58,7 +58,7 @@ namespace TraderApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Agent Order Details Information for AgentOrdersController: Exception: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Agent Order Detail Information: Exception:{ex.Message}.");
             }
         }
 
@@ -97,7 +97,7 @@ namespace TraderApi.Controllers
                 }
                 else
                 {
-                    throw;
+                    return StatusCode(500, $"An error occurred while updating Agent Order Detail Information: Exception:{ex.Message}.");
                 }
             }
             return NoContent();
@@ -129,14 +129,7 @@ namespace TraderApi.Controllers
             catch (DbUpdateConcurrencyException ex)
             {
                 _logger.LogCritical($"Error: Exception processing for PostAgentOrder: {AgentOrderDb.Name}, Exception: {ex}.");
-                if (!AgentOrderExists(AgentOrderDb.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(500, $"An error occurred while inserting Agent Order Detail Information: Exception:{ex.Message}.");
             }
             return CreatedAtAction("GetAgentOrder", new { id = AgentOrderDb.Id }, AgentOrderDb);
         }
@@ -165,7 +158,7 @@ namespace TraderApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable Delete Agent Order Details Information for AgentOrdersController: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while deleting Agent Order Detail Information: Exception:{ex.Message}.");
             }
         }
         private bool AgentOrderExists(int id)

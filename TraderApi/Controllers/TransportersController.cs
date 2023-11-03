@@ -16,8 +16,8 @@ namespace TraderApi.Controllers
     public class TransportersController : ControllerBase
     {
         private readonly TraderApiContext _context;
-        private readonly ILogger<AgentsController> _logger;
-        public TransportersController(TraderApiContext context, ILogger<AgentsController> logger)
+        private readonly ILogger<TransportersController> _logger;
+        public TransportersController(TraderApiContext context, ILogger<TransportersController> logger)
         {
             _context = context;
             _logger = logger;
@@ -39,7 +39,7 @@ namespace TraderApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Transporter Details Information for TransportersController: Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Transporter Details  Information: Exception:{ex.Message}.");
             }
         }
 
@@ -65,7 +65,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Transporter Details Information for TransportersController: Exception: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Transporter Details  Information: Exception:{ex.Message}.");
             }
         }
 
@@ -102,7 +102,7 @@ namespace TraderApi.Controllers
                 }
                 else
                 {
-                    throw;
+                    return StatusCode(500, $"An error occurred while updating Transporter Details  Information: Exception:{ex.Message}.");
                 }
             }
             return NoContent();
@@ -131,14 +131,7 @@ namespace TraderApi.Controllers
             catch (DbUpdateConcurrencyException ex)
             {
                 _logger.LogCritical($"Error: Exception processing for PostTransporter: {transporterDb.Name}, Exception: {ex}.");
-                if (!TransporterExists(transporterDb.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(500, $"An error occurred while inserting Transporter Details  Information: Exception:{ex.Message}.");
             }
             return CreatedAtAction("GetTransporter", new { id = transporterDb.Id }, transporterDb);
         }
@@ -167,7 +160,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable Delete Transporter Details Information for TransportersController: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while deleting Transporter Details  Information: Exception:{ex.Message}.");
             }
         }
         private bool TransporterExists(int id)

@@ -40,7 +40,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                _logger.LogCritical($"Error: Unable to Getting Account Details Information for AccountDetailsController: Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Account Detail Detail Information: Exception:{ex.Message}.");
             }
         }
 
@@ -65,7 +65,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Account Details Information for AccountDetailsController: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Account Detail Detail Information: Exception:{ex.Message}.");
             }
         }
 
@@ -104,7 +104,7 @@ namespace TraderApi.Controllers
                 }
                 else
                 {
-                    throw;
+                    return StatusCode(500, $"An error occurred while updating Account Detail  Information: Exception:{ex.Message}.");
                 }
             }
             return NoContent();
@@ -135,14 +135,7 @@ namespace TraderApi.Controllers
             catch (DbUpdateConcurrencyException ex)
             {
                 _logger.LogCritical($"Error: Exception processing for PostAccountDetail: {accountDetailDb.Name}, Exception: {ex}.");
-                if (!AccountDetailExists(accountDetailDb.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(500, $"An error occurred while inserting Account Detail  Information: Exception:{ex.Message}.");
             }
             return CreatedAtAction("GetAccountDetail", new { id = accountDetailDb.Id }, accountDetailDb);
         }
@@ -171,7 +164,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                _logger.LogCritical($"Error: Unable Delete Account Details Information for AccountDetailsController: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while deleting Account Detail  Information: Exception:{ex.Message}.");
             }
         }
         private bool AccountDetailExists(int id)

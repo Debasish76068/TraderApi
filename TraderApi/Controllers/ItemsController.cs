@@ -15,8 +15,8 @@ namespace TraderApi.Controllers
     public class ItemsController : ControllerBase
     {
         private readonly TraderApiContext _context;
-        private readonly ILogger<AccountDetailsController> _logger;
-        public ItemsController(TraderApiContext context, ILogger<AccountDetailsController> logger)
+        private readonly ILogger<ItemsController> _logger;
+        public ItemsController(TraderApiContext context, ILogger<ItemsController> logger)
         {
             _context = context;
             _logger = logger;
@@ -38,7 +38,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Item Details Information for ItemsController: Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Item Details Information: Exception:{ex.Message}.");
             }
         }
 
@@ -63,8 +63,7 @@ namespace TraderApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogCritical($"Error: Unable to Getting Item Details Information for ItemsController: Exception: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Item Details Information: Exception:{ex.Message}.");
             }
         }
 

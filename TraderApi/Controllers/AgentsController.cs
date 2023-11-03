@@ -33,7 +33,7 @@ namespace TraderApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Agent Details Information for AgentsController: Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Agent Details Information: Exception:{ex.Message}.");
             }
         }
 
@@ -58,7 +58,7 @@ namespace TraderApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Agent Details Information for AgentsController: Exception: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Agent Details Information: Exception:{ex.Message}.");
             }
         }
 
@@ -96,7 +96,7 @@ namespace TraderApi.Controllers
                 }
                 else
                 {
-                    throw;
+                    return StatusCode(500, $"An error occurred while updating Agent Details Information: Exception:{ex.Message}.");
                 }
             }
             return NoContent();
@@ -126,14 +126,7 @@ namespace TraderApi.Controllers
             catch (DbUpdateConcurrencyException ex)
             {
                 _logger.LogCritical($"Error: Exception processing for PostAgent:{agentDb.Name}, Exception: {ex}.");
-                if (!AgentExists(agentDb.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(500, $"An error occurred while inserting Agent Details Information: Exception:{ex.Message}.");
             }
             return CreatedAtAction("GetAgent", new { id = agentDb.Id }, agentDb);
         }
@@ -162,7 +155,7 @@ namespace TraderApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable Delete Agent Details Information for AgentsController: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while deleting Agent Details Information: Exception:{ex.Message}.");
             }
         }
         private bool AgentExists(int id)

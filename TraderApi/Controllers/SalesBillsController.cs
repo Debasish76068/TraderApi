@@ -16,8 +16,8 @@ namespace TraderApi.Controllers
     public class SalesBillsController : ControllerBase
     {
         private readonly TraderApiContext _context;
-        private readonly ILogger<AgentsController> _logger;
-        public SalesBillsController(TraderApiContext context, ILogger<AgentsController> logger)
+        private readonly ILogger<SalesBillsController> _logger;
+        public SalesBillsController(TraderApiContext context, ILogger<SalesBillsController> logger)
         {
             _context = context;
             _logger = logger;
@@ -39,7 +39,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Sales Bills Detail Information for SalesBillsController: Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Sales Bills Detail Information: Exception:{ex.Message}.");
             }
         }
 
@@ -64,7 +64,7 @@ namespace TraderApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Sales Bills Detail Information for SalesBillsController: Exception: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Sales Bills Detail Information: Exception:{ex.Message}.");
             }
         }
 
@@ -74,7 +74,7 @@ namespace TraderApi.Controllers
         {
             try
             {
-                _logger.LogInformation($" Getting Sales Bills Detail Information for SalesBillsController: {purchaserId}.");
+                _logger.LogInformation($" Getting Purchaser Sales Bills Detail Information for SalesBillsController: {purchaserId}.");
                 if (_context.SalesBill == null)
                 {
                     return NotFound();
@@ -88,8 +88,8 @@ namespace TraderApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogCritical($"Error: Unable to Getting Sales Bills Detail Information for SalesBillsController: Exception: {purchaserId}, Exception: {ex}.");
-                throw;
+                _logger.LogCritical($"Error: Unable to Getting Purchaser Sales Bills Detail Information for SalesBillsController: Exception: {purchaserId}, Exception: {ex}.");
+                return StatusCode(500, $"An error occurred while retrieving Purchaser Sales Bills Detail Information: Exception:{ex.Message}.");
             }
         }
 
@@ -125,7 +125,7 @@ namespace TraderApi.Controllers
                 }
                 else
                 {
-                    throw;
+                    return StatusCode(500, $"An error occurred while updating Sales Bills Detail Information: Exception:{ex.Message}.");
                 }
             }
             return NoContent();
@@ -183,14 +183,7 @@ namespace TraderApi.Controllers
             catch (DbUpdateConcurrencyException ex)
             {
                 _logger.LogCritical($"Error: Exception processing for PostSalesBill: {salesBillDb.SalesBillNumber}, Exception: {ex}.");
-                if (!SalesBillExists(salesBillDb.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(500, $"An error occurred while inserting Sales Bills Detail Information: Exception:{ex.Message}.");
             }
             return CreatedAtAction("GetSalesBill", new { id = salesBillDb.Id }, salesBillDb);
         }

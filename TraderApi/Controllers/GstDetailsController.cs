@@ -15,9 +15,9 @@ namespace TraderApi.Controllers
     public class GstDetailsController : ControllerBase
     {
         private readonly TraderApiContext _context;
-        private readonly ILogger<AgentsController> _logger;
+        private readonly ILogger<GstDetailsController> _logger;
 
-        public GstDetailsController(TraderApiContext context, ILogger<AgentsController> logger)
+        public GstDetailsController(TraderApiContext context, ILogger<GstDetailsController> logger)
         {
             _context = context;
             _logger = logger;
@@ -39,7 +39,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Gst Detail Information for GstDetailsController: Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Gst Detail Information: Exception:{ex.Message}.");
             }
         }
 
@@ -65,7 +65,7 @@ namespace TraderApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Gst Detail Information for GstDetailsController: Exception: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Gst Detail Information: Exception:{ex.Message}.");
             }
         }
 
@@ -103,7 +103,7 @@ namespace TraderApi.Controllers
                 }
                 else
                 {
-                    throw;
+                    return StatusCode(500, $"An error occurred while updating Gst Detail Information: Exception:{ex.Message}.");
                 }
             }
             return NoContent();
@@ -133,14 +133,7 @@ namespace TraderApi.Controllers
             catch (DbUpdateConcurrencyException ex)
             {
                 _logger.LogCritical($"Error: Exception processing for PostGstDetail: {gstDetailDb.Name}, Exception: {ex}.");
-                if (!GstDetailExists(gstDetailDb.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(500, $"An error occurred while inserting Gst Detail Information: Exception:{ex.Message}.");
             }
             return CreatedAtAction("GetGstDetail", new { id = gstDetailDb.Id }, gstDetailDb);
         }
@@ -169,7 +162,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable Delete Gst Detail Information for GstDetailsController: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while deleting Gst Detail Information: Exception:{ex.Message}.");
             }
         }
         private bool GstDetailExists(int id)

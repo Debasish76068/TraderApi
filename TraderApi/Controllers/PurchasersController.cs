@@ -16,8 +16,8 @@ namespace TraderApi.Controllers
     public class PurchasersController : ControllerBase
     {
         private readonly TraderApiContext _context;
-        private readonly ILogger<AgentsController> _logger;
-        public PurchasersController(TraderApiContext context, ILogger<AgentsController> logger)
+        private readonly ILogger<PurchasersController> _logger;
+        public PurchasersController(TraderApiContext context, ILogger<PurchasersController> logger)
         {
             _context = context;
             _logger = logger;
@@ -39,7 +39,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Purchaser Detail Information for PurchaserController: Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Purchaser Details Information: Exception:{ex.Message}.");
             }
         }
 
@@ -65,7 +65,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable to Getting Purchaser Detail Information for PurchaserController: Exception: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while retrieving Purchaser Details Information: Exception:{ex.Message}.");
             }
         }
 
@@ -103,7 +103,7 @@ namespace TraderApi.Controllers
                 }
                 else
                 {
-                    throw;
+                    return StatusCode(500, $"An error occurred while updating Purchaser Details Information: Exception:{ex.Message}.");
                 }
             }
             return NoContent();
@@ -133,14 +133,7 @@ namespace TraderApi.Controllers
             catch (DbUpdateConcurrencyException ex)
             {
                 _logger.LogCritical($"Error: Exception processing for PostPurchaser: {purchaserDb.Name}, Exception: {ex}.");
-                if (!PurchaserExists(purchaserDb.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(500, $"An error occurred while inserting Purchaser Details Information: Exception:{ex.Message}.");
             }
             return CreatedAtAction("GetPurchaser", new { id = purchaserDb.Id }, purchaserDb);
         }
@@ -169,7 +162,7 @@ namespace TraderApi.Controllers
             catch(Exception ex)
             {
                 _logger.LogCritical($"Error: Unable Delete Purchaser Details Information for PurchaserController: {id}, Exception: {ex}.");
-                throw;
+                return StatusCode(500, $"An error occurred while deleting Purchaser Details Information: Exception:{ex.Message}.");
             }
         }
         private bool PurchaserExists(int id)

@@ -7,9 +7,12 @@ namespace TraderApi.Data.Entities
         public int Id { get; set; }
         [StringLength(10)]
         public string OrderNo { get; set; }
+        public DateTime OrderDate { get; set; }
+        public int PurchaserId { get; set; }
 
         [StringLength(50)]
         public string Name { get; set; }
+        public int ItemsId { get; set; }
 
         [StringLength(50)]
         public string item { get; set; }
@@ -23,5 +26,7 @@ namespace TraderApi.Data.Entities
         public DateTime? ModifiedDate { get; set; }
         public DateTime? DispatchDate { get; set; }
         public bool IsDeleted { get; set; }
+
+        public bool IsDeletedFromOrderWise { get; set; }
     }
 }

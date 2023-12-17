@@ -6,25 +6,27 @@ namespace TraderApi.Data.Entities
     {
         public int Id { get; set; }
         public bool IsAgentOrder { get; set; }
+        public DateTime BillingDate { get; set; }
         public DateTime BookingDate { get; set; }
-        public DateTime SalesYear { get; set; }
+        public string SalesYear { get; set; }
         public int SalesBillNumber { get; set; }
+        public string OrderNo { get; set; }
         public int BilitNumber { get; set; }
 
-        public int TransporterId { get; set; }
+        public int? TransporterId { get; set; }
         [StringLength(50)]
-        public string TransporterName { get; set; }
-        public int AgentId { get; set; }
+        public string? TransporterName { get; set; }
+        public int? AgentId { get; set; }
 
         [StringLength(50)]
-        public string AgentName { get; set; }
-        public int PurchaserId { get; set; }
+        public string? AgentName { get; set; }
+        public int? PurchaserId { get; set; }
 
         [StringLength(50)]
-        public string Purchaser { get; set; }
+        public string? Purchaser { get; set; }
 
         [StringLength(10)]
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         public decimal Weight { get; set; }
         public decimal CommissionPercentage { get; set; }
@@ -36,6 +38,10 @@ namespace TraderApi.Data.Entities
         public decimal Total { get; set; }
         public decimal Less { get; set; }
         public decimal GrossTotal { get; set; }
+        public decimal IgstPercentage { get; set; }
+        public decimal TcsPointPercentage { get; set; }
+        public decimal BillAmount { get; set; }
+        public decimal RemainingAmount { get; set; }
         public string Note { get; set; }
 
         [StringLength(50)]

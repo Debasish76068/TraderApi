@@ -7,7 +7,7 @@ namespace TraderApi.Models
     {
         public bool IsAgentOrder { get; set; }
         public DateTime BookingDate { get; set; }
-        public DateTime SalesYear { get; set; }
+        public string SalesYear { get; set; }
         public int SalesBillNumber { get; set; }
         public int BilitNumber { get; set; }
         public int TransporterId { get; set; }

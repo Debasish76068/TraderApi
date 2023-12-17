@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TraderApi.Data;
 
@@ -11,9 +12,10 @@ using TraderApi.Data;
 namespace TraderApi.Migrations
 {
     [DbContext(typeof(TraderApiContext))]
-    partial class TraderApiContextModelSnapshot : ModelSnapshot
+    [Migration("20231202230223_UpdateAgentOrder")]
+    partial class UpdateAgentOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -171,13 +173,6 @@ namespace TraderApi.Migrations
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("Purchaser")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int?>("PurchaserId")
-                        .HasColumnType("int");
 
                     b.Property<decimal>("Rate")
                         .HasColumnType("decimal(18,2)");
@@ -437,12 +432,6 @@ namespace TraderApi.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsDeletedFromOrderWise")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("ItemsId")
-                        .HasColumnType("int");
-
                     b.Property<string>("ModifiedBy")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -455,16 +444,10 @@ namespace TraderApi.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("OrderDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("OrderNo")
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
-
-                    b.Property<int>("PurchaserId")
-                        .HasColumnType("int");
 
                     b.Property<decimal>("Rate")
                         .HasColumnType("decimal(18,2)");
@@ -487,10 +470,11 @@ namespace TraderApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int?>("AgentId")
+                    b.Property<int>("AgentId")
                         .HasColumnType("int");
 
                     b.Property<string>("AgentName")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -499,12 +483,6 @@ namespace TraderApi.Migrations
 
                     b.Property<int>("BilitNumber")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("BillAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("BillingDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("BookingDate")
                         .HasColumnType("datetime2");
@@ -524,9 +502,6 @@ namespace TraderApi.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("GrossTotal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("IgstPercentage")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsAgentOrder")
@@ -549,10 +524,6 @@ namespace TraderApi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("OrderNo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<decimal>("PackingChargePerBag")
                         .HasColumnType("decimal(18,2)");
 
@@ -560,39 +531,35 @@ namespace TraderApi.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Purchaser")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int?>("PurchaserId")
+                    b.Property<int>("PurchaserId")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("RemainingAmount")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("SalesBillNumber")
                         .HasColumnType("int");
 
-                    b.Property<string>("SalesYear")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("SalesYear")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
+                        .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<decimal>("TcsPercentage")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("TcsPointPercentage")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal>("Total")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("TransporterId")
+                    b.Property<int>("TransporterId")
                         .HasColumnType("int");
 
                     b.Property<string>("TransporterName")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
